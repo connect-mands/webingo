@@ -186,7 +186,7 @@ export default function ProjectPage() {
           <div><strong>{tasks.length}</strong><span>Total tasks</span></div>
           <div><strong>{members.length}</strong><span>Members</span></div>
           <div><strong>{presence.length}</strong><span>Online</span></div>
-          <div><strong>{currentRole || "..."}</strong><span>Your role</span></div>
+          <div className="role-summary-card"><strong>{currentRole || "..."}</strong><span>Your role</span></div>
         </div>
       </section>
 

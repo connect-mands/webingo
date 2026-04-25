@@ -758,6 +758,14 @@ textarea {
   letter-spacing: -0.05em;
 }
 
+.project-summary .role-summary-card strong {
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  white-space: normal;
+  word-break: break-word;
+}
+
 .project-summary span {
   display: block;
   margin-top: 0.4rem;
@@ -942,6 +950,29 @@ textarea {
 .workspace-panel {
   min-width: 0;
   padding: clamp(1.4rem, 3vw, 2rem);
+}
+
+@media (min-width: 1180px) {
+  .project-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-side-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .project-side-panel > * {
+    min-width: 0;
+  }
+
+  .project-side-panel .activity-panel {
+    grid-column: 1 / -1;
+  }
+
+  .workspace-panel {
+    grid-column: 1 / -1;
+  }
 }
 
 .board-heading {
@@ -1162,6 +1193,10 @@ textarea {
     grid-template-columns: repeat(3, 1fr);
   }
 
+  .project-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .create-project-card {
     position: static;
   }
@@ -1190,7 +1225,8 @@ textarea {
 }
 
 @media (max-width: 640px) {
-  .dashboard-metrics {
+  .dashboard-metrics,
+  .project-summary {
     grid-template-columns: 1fr;
   }
 
