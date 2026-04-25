@@ -1140,6 +1140,68 @@ textarea {
   display: none;
 }
 
+.attachment-list {
+  display: grid;
+  gap: 0.55rem;
+  border-top: 1px solid #e6ebf3;
+  padding-top: 0.8rem;
+}
+
+.attachment-list > p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.attachment-items {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.attachment-item {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid #e6ebf3;
+  border-radius: 14px;
+  padding: 0.5rem;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.attachment-item img,
+.file-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 10px;
+}
+
+.attachment-item img {
+  object-fit: cover;
+  background: #e2e8f0;
+}
+
+.attachment-item > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-icon {
+  display: grid;
+  place-items: center;
+  background: #e0e7ff;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.12em;

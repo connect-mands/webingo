@@ -11,6 +11,21 @@ import { showToast } from "../features/uiSlice";
 const statuses = ["Todo", "In Progress", "Review", "Completed"];
 const priorities = ["Low", "Medium", "High", "Critical"];
 
+function isImageAttachment(attachment) {
+  return attachment.mimeType?.startsWith("image/");
+}
+
+function attachmentUrl(projectId, attachmentId) {
+  const baseUrl = api.defaults.baseURL || "";
+  return `${baseUrl}/projects/${projectId}/tasks/attachments/${attachmentId}/download`;
+}
+
+function mergeAttachments(existing = [], incoming = []) {
+  const byId = new Map(existing.map((attachment) => [attachment._id, attachment]));
+  incoming.forEach((attachment) => byId.set(attachment._id, attachment));
+  return Array.from(byId.values());
+}
+
 function useDebounced(value, delay = 350) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -20,7 +35,7 @@ function useDebounced(value, delay = 350) {
   return debounced;
 }
 
-const TaskCard = memo(function TaskCard({ task, selected, onSelect, onMove, onUpload, canWrite }) {
+const TaskCard = memo(function TaskCard({ task, selected, attachments = [], projectId, onSelect, onMove, onUpload, canWrite }) {
   return (
     <article className="task-card">
       <div className="task-card-header">
@@ -51,6 +66,26 @@ const TaskCard = memo(function TaskCard({ task, selected, onSelect, onMove, onUp
           <input type="file" multiple onChange={(event) => onUpload(task._id, event.target.files)} />
         </label>
       )}
+      {attachments.length > 0 && (
+        <div className="attachment-list">
+          <p>Attachments</p>
+          <div className="attachment-items">
+            {attachments.map((attachment) => {
+              const url = attachmentUrl(projectId, attachment._id);
+              return (
+                <a className="attachment-item" href={url} target="_blank" rel="noreferrer" key={attachment._id}>
+                  {isImageAttachment(attachment) ? (
+                    <img src={url} alt={attachment.originalName} />
+                  ) : (
+                    <span className="file-icon">File</span>
+                  )}
+                  <span>{attachment.originalName}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </article>
   );
 });
@@ -71,7 +106,9 @@ export default function ProjectPage() {
   const { register: projectField, handleSubmit: handleProjectSubmit, reset: resetProject } = useForm({ defaultValues: { status: "Active" } });
   const [filters, setFilters] = useState({ search: "", status: "", priority: "" });
   const [inviteError, setInviteError] = useState("");
+  const [attachmentsByTask, setAttachmentsByTask] = useState({});
   const debouncedSearch = useDebounced(filters.search);
+  const taskIdsKey = tasks.map((task) => task._id).join("|");
 
   useEffect(() => {
     dispatch(fetchProjectDetails(projectId));
@@ -80,6 +117,32 @@ export default function ProjectPage() {
   useEffect(() => {
     dispatch(fetchTasks({ projectId, params: { ...filters, search: debouncedSearch } }));
   }, [dispatch, projectId, filters.status, filters.priority, debouncedSearch]);
+
+  useEffect(() => {
+    const taskIds = taskIdsKey ? taskIdsKey.split("|") : [];
+    if (taskIds.length === 0) {
+      setAttachmentsByTask({});
+      return;
+    }
+
+    let ignore = false;
+    async function loadAttachments() {
+      const entries = await Promise.all(
+        taskIds.map(async (taskId) => {
+          const { data } = await api.get(`/projects/${projectId}/tasks/${taskId}/attachments`);
+          return [taskId, data];
+        })
+      );
+      if (!ignore) {
+        setAttachmentsByTask(Object.fromEntries(entries));
+      }
+    }
+
+    loadAttachments();
+    return () => {
+      ignore = true;
+    };
+  }, [projectId, taskIdsKey]);
 
   useEffect(() => {
     if (!project) return;
@@ -98,7 +161,13 @@ export default function ProjectPage() {
     socket.on("task:updated", (task) => dispatch(taskReceived(task)));
     socket.on("task:deleted", ({ id }) => dispatch(taskDeleted(id)));
     socket.on("task:bulkUpdated", (payload) => dispatch(bulkApplied(payload)));
-    socket.on("attachments:created", () => dispatch(showToast("Attachment uploaded")));
+    socket.on("attachments:created", ({ taskId, attachments }) => {
+      setAttachmentsByTask((current) => ({
+        ...current,
+        [taskId]: mergeAttachments(current[taskId], attachments)
+      }));
+      dispatch(showToast("Attachment uploaded"));
+    });
     socket.on("presence:update", (users) => dispatch(presenceUpdated(users)));
     return () => {
       socket.emit("project:leave", { projectId });
@@ -142,9 +211,13 @@ export default function ProjectPage() {
     if (!canWrite) return;
     const form = new FormData();
     Array.from(files).forEach((file) => form.append("files", file));
-    await api.post(`/projects/${projectId}/tasks/${taskId}/attachments`, form, {
+    const { data } = await api.post(`/projects/${projectId}/tasks/${taskId}/attachments`, form, {
       onUploadProgress: (event) => dispatch(showToast(`Upload ${Math.round((event.loaded * 100) / event.total)}%`))
     });
+    setAttachmentsByTask((current) => ({
+      ...current,
+      [taskId]: mergeAttachments(current[taskId], data)
+    }));
   }
 
   function bulk(operation, value) {
@@ -378,6 +451,8 @@ export default function ProjectPage() {
                     onSelect={(id) => dispatch(toggleSelected(id))}
                     onMove={onMove}
                     onUpload={onUpload}
+                    attachments={attachmentsByTask[task._id] || []}
+                    projectId={projectId}
                     canWrite={canWrite}
                   />
                 )) : <p className="column-empty">No tasks here</p>}

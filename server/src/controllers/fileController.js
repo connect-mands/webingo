@@ -30,7 +30,8 @@ export async function downloadAttachment(req, res, next) {
       req.params.attachmentId
     );
     res.setHeader("Content-Type", contentType || "application/octet-stream");
-    res.setHeader("Content-Disposition", `attachment; filename="${attachment.originalName.replace(/"/g, "")}"`);
+    const disposition = attachment.mimeType?.startsWith("image/") ? "inline" : "attachment";
+    res.setHeader("Content-Disposition", `${disposition}; filename="${attachment.originalName.replace(/"/g, "")}"`);
     stream.pipe(res);
   } catch (error) {
     next(error);
