@@ -966,10 +966,6 @@ textarea {
     min-width: 0;
   }
 
-  .project-side-panel .activity-panel {
-    grid-column: 1 / -1;
-  }
-
   .workspace-panel {
     grid-column: 1 / -1;
   }
