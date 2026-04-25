@@ -1,4 +1,4 @@
-import { ProjectMember, User } from "../models/index.js";
+import { Project, ProjectMember, User } from "../models/index.js";
 import { AppError } from "../utils/AppError.js";
 import { verifyAccessToken } from "../utils/tokens.js";
 
@@ -33,7 +33,16 @@ export async function authenticate(req, _res, next) {
 export async function loadProjectRole(req, _res, next) {
   const projectId = req.params.projectId || req.body.projectId || req.query.projectId;
   if (!projectId) return next(new AppError("Project id required", 400));
-  const membership = await ProjectMember.findOne({ project: projectId, user: req.user._id }).lean();
+  const [project, membership] = await Promise.all([
+    Project.findById(projectId).select("owner").lean(),
+    ProjectMember.findOne({ project: projectId, user: req.user._id }).lean()
+  ]);
+  if (!project) return next(new AppError("Project not found", 404));
+  if (project.owner?.toString() === req.user._id.toString()) {
+    req.projectRole = roles.admin;
+    req.projectId = projectId;
+    return next();
+  }
   if (!membership) return next(new AppError("Project access denied", 403));
   req.projectRole = membership.role;
   req.projectId = projectId;

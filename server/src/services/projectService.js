@@ -151,9 +151,12 @@ export async function validateInvite({ email, token }) {
 export async function acceptInvite({ userId, email, token }) {
   const invitation = await Invitation.findOne({ email, tokenHash: hashToken(token), acceptedAt: null });
   if (!invitation || invitation.expiresAt < new Date()) throw new AppError("Invalid or expired invitation", 400);
+  const project = await Project.findById(invitation.project).select("owner").lean();
+  if (!project) throw notFound("Project");
+  const role = project.owner?.toString() === userId.toString() ? "Project Admin" : invitation.role;
   await ProjectMember.updateOne(
     { project: invitation.project, user: userId },
-    { role: invitation.role },
+    { role },
     { upsert: true }
   );
   invitation.acceptedAt = new Date();
@@ -164,7 +167,7 @@ export async function acceptInvite({ userId, email, token }) {
     action: "member.joined",
     entityType: "ProjectMember",
     entityId: userId,
-    metadata: { email, role: invitation.role }
+    metadata: { email, role }
   });
   cacheDeleteByPrefix(`projects:${userId}`);
 }
