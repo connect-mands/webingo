@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { ActivityLog, Attachment, Invitation, Notification, Project, ProjectMember, Task } from "../models/index.js";
+import { ActivityLog, Attachment, Invitation, Notification, Project, ProjectMember, Task, User } from "../models/index.js";
 import { createProjectWithOwner, listProjectMembers, listProjectsForUser } from "../repositories/projectRepository.js";
 import { AppError, notFound } from "../utils/AppError.js";
 import { cacheDeleteByPrefix, cacheGet, cacheSet } from "../utils/cache.js";
@@ -102,6 +102,24 @@ export async function deleteProject({ projectId, userId }) {
 export async function inviteMember({ projectId, email, role, invitedBy }) {
   const project = await Project.findById(projectId).select("name").lean();
   if (!project) throw notFound("Project");
+  const existingUser = await User.findOne({ email }).select("_id").lean();
+  if (existingUser) {
+    const existingMembership = await ProjectMember.findOne({ project: projectId, user: existingUser._id }).lean();
+    if (existingMembership) {
+      throw new AppError("User is already assigned to this project", 409);
+    }
+  }
+
+  const activeInvite = await Invitation.findOne({
+    project: projectId,
+    email,
+    acceptedAt: null,
+    expiresAt: { $gt: new Date() }
+  }).lean();
+  if (activeInvite) {
+    throw new AppError("An active invitation already exists for this email", 409);
+  }
+
   const token = randomToken();
   const invitation = await Invitation.create({
     project: projectId,

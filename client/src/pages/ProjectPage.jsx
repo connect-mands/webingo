@@ -70,6 +70,7 @@ export default function ProjectPage() {
   const { register: inviteField, handleSubmit: handleInviteSubmit, reset: resetInvite } = useForm({ defaultValues: { role: "Team Member" } });
   const { register: projectField, handleSubmit: handleProjectSubmit, reset: resetProject } = useForm({ defaultValues: { status: "Active" } });
   const [filters, setFilters] = useState({ search: "", status: "", priority: "" });
+  const [inviteError, setInviteError] = useState("");
   const debouncedSearch = useDebounced(filters.search);
 
   useEffect(() => {
@@ -153,9 +154,16 @@ export default function ProjectPage() {
 
   async function onInvite(values) {
     if (!canInvite) return;
-    await api.post(`/projects/${projectId}/invitations`, values);
-    resetInvite({ role: "Team Member" });
-    dispatch(showToast(`Invite sent to ${values.email}`));
+    setInviteError("");
+    try {
+      await api.post(`/projects/${projectId}/invitations`, values);
+      resetInvite({ role: "Team Member" });
+      dispatch(showToast(`Invite sent to ${values.email}`));
+    } catch (error) {
+      const message = error.response?.data?.error?.message || "Could not send invitation.";
+      setInviteError(message);
+      dispatch(showToast(message));
+    }
   }
 
   async function onUpdateProject(values) {
@@ -305,6 +313,7 @@ export default function ProjectPage() {
                   </select>
                 </label>
               </div>
+              {inviteError && <p className="form-error">{inviteError}</p>}
               <button className="full-width">Send invite</button>
             </form>
           )}
