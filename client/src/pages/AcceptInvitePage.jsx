@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { fetchProjects } from "../features/projectSlice";
 import { api } from "../services/api";
 
 export default function AcceptInvitePage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const authStatus = useSelector((state) => state.auth.status);
   const [status, setStatus] = useState("idle");
@@ -48,9 +50,10 @@ export default function AcceptInvitePage() {
     setMessage("");
     try {
       await api.post("/projects/accept-invite", { email, token });
+      await dispatch(fetchProjects());
       setStatus("success");
       setMessage("Invitation accepted. Redirecting to your dashboard...");
-      setTimeout(() => navigate("/"), 900);
+      setTimeout(() => navigate("/", { replace: true }), 900);
     } catch (error) {
       setStatus("failed");
       setMessage(error.response?.data?.error?.message || "Could not accept invitation.");

@@ -166,4 +166,5 @@ export async function acceptInvite({ userId, email, token }) {
     entityId: userId,
     metadata: { email, role: invitation.role }
   });
+  cacheDeleteByPrefix(`projects:${userId}`);
 }
