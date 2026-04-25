@@ -10,7 +10,7 @@ A MERN stack senior developer assignment implementation focused on authenticatio
 - **JWT sessions with refresh rotation**: Short-lived access tokens are paired with persisted refresh token IDs, delivered through HTTP-only cookies, and revoked on refresh/logout.
 - **Socket.io rooms**: Users join `project:<id>` rooms after socket JWT verification and membership checks. Task and attachment events only broadcast to that room.
 - **Optimistic concurrency**: Tasks include a `version` field. Updates can pass the known version and receive a `409` if the task changed.
-- **Local storage adapter first**: Attachments use secure local disk storage for the assignment, with the file service isolated so S3/Cloudinary can replace it.
+- **S3 attachments**: Attachments are stored in AWS S3 under a configurable prefix, for example `demo/`.
 - **Caching**: In-memory TTL caching is used for project lists and task list queries. Mutation paths invalidate related prefixes.
 
 ## Tech Stack
@@ -50,7 +50,8 @@ Server:
 - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` - long random secrets.
 - `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN` - token lifetimes.
 - `BCRYPT_ROUNDS` - defaults to `12`.
-- `UPLOAD_DIR`, `MAX_FILE_SIZE_MB` - local upload configuration.
+- `MAX_FILE_SIZE_MB` - upload size limit.
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME`, `AWS_S3_PREFIX` - required S3 storage configuration. `AWS_S3_PREFIX=demo` stores files under the `demo/` folder in the bucket.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` - optional SMTP settings. Without SMTP, reset/invite emails are logged in development.
 - `MAILTRAP_TOKEN`, `MAILTRAP_SENDER_EMAIL`, `MAILTRAP_SENDER_NAME` - optional Mailtrap API email delivery. If `MAILTRAP_TOKEN` is set, Mailtrap is used before SMTP.
 - `APP_URL` - frontend URL used in email links.
@@ -137,7 +138,7 @@ Server emits:
 2. Deploy `server` to Render or Railway with root directory `server`, build command `npm install`, start command `npm start`.
 3. Deploy `client` to Vercel or Netlify with root directory `client`, build command `npm run build`, output directory `dist`.
 4. Set `CLIENT_ORIGIN`, `APP_URL`, `VITE_API_URL`, and `VITE_SOCKET_URL` to deployed URLs.
-5. Replace local uploads with S3/Cloudinary by implementing the same file service contract in `server/src/services/fileService.js`.
+5. Set AWS S3 environment variables on the server for attachment uploads and downloads.
 6. Configure SMTP or a transactional email provider for password resets and invitations.
 
 ## Trade-Offs

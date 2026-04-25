@@ -1,4 +1,3 @@
-import { env } from "../config/env.js";
 import * as fileService from "../services/fileService.js";
 
 export async function uploadAttachments(req, res, next) {
@@ -26,12 +25,13 @@ export async function listAttachments(req, res, next) {
 
 export async function downloadAttachment(req, res, next) {
   try {
-    const { attachment, absolutePath } = await fileService.getAttachmentForDownload(
+    const { attachment, stream, contentType } = await fileService.getAttachmentForDownload(
       req.params.projectId,
-      req.params.attachmentId,
-      env.uploadDir
+      req.params.attachmentId
     );
-    res.download(absolutePath, attachment.originalName);
+    res.setHeader("Content-Type", contentType || "application/octet-stream");
+    res.setHeader("Content-Disposition", `attachment; filename="${attachment.originalName.replace(/"/g, "")}"`);
+    stream.pipe(res);
   } catch (error) {
     next(error);
   }

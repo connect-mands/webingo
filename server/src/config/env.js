@@ -12,7 +12,6 @@ export const env = {
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   bcryptRounds: Number(process.env.BCRYPT_ROUNDS || 12),
-  uploadDir: process.env.UPLOAD_DIR || "uploads",
   maxFileSizeMb: Number(process.env.MAX_FILE_SIZE_MB || 5),
   smtp: {
     host: process.env.SMTP_HOST,
@@ -25,6 +24,11 @@ export const env = {
     token: process.env.MAILTRAP_TOKEN,
     senderEmail: process.env.MAILTRAP_SENDER_EMAIL || process.env.EMAIL_FROM || "hello@demomailtrap.co",
     senderName: process.env.MAILTRAP_SENDER_NAME || "CollabPM"
+  },
+  aws: {
+    region: process.env.AWS_REGION || "ap-south-1",
+    s3Bucket: process.env.AWS_S3_BUCKET_NAME,
+    s3Prefix: (process.env.AWS_S3_PREFIX || "demo").replace(/^\/+|\/+$/g, "")
   },
   appUrl: process.env.APP_URL || "http://localhost:5173"
 };
