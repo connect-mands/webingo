@@ -8,6 +8,7 @@ import { apiLimiter, apiSlowDown, corsMiddleware, securityMiddleware } from "./m
 
 export function createApp() {
   const app = express();
+  app.set("trust proxy", 1);
   app.use(corsMiddleware);
   app.use(securityMiddleware);
   app.use(compression());

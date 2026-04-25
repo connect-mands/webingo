@@ -1,9 +1,10 @@
 import * as authService from "../services/authService.js";
+import { env } from "../config/env.js";
 
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: env.nodeEnv === "production",
+  sameSite: env.nodeEnv === "production" ? "none" : "lax",
   path: "/"
 };
 
