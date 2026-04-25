@@ -52,8 +52,7 @@ Server:
 - `BCRYPT_ROUNDS` - defaults to `12`.
 - `MAX_FILE_SIZE_MB` - upload size limit.
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME`, `AWS_S3_PREFIX` - required S3 storage configuration. `AWS_S3_PREFIX=demo` stores files under the `demo/` folder in the bucket.
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` - optional SMTP settings. Without SMTP, reset/invite emails are logged in development.
-- `MAILTRAP_TOKEN`, `MAILTRAP_SENDER_EMAIL`, `MAILTRAP_SENDER_NAME` - optional Mailtrap API email delivery. If `MAILTRAP_TOKEN` is set, Mailtrap is used before SMTP.
+- `EMAILJS_SERVICE_ID`, `EMAILJS_PUBLIC_KEY`, `EMAILJS_PASSWORD_RESET_TEMPLATE_ID`, `EMAILJS_INVITE_TEMPLATE_ID` - optional EmailJS email template configuration. Templates should include `{{link}}`; invitations can also use `{{name}}`, `{{project_name}}`, `{{role}}`, and `{{to_email}}`.
 - `APP_URL` - frontend URL used in email links.
 
 Client:
@@ -139,11 +138,11 @@ Server emits:
 3. Deploy `client` to Vercel or Netlify with root directory `client`, build command `npm run build`, output directory `dist`.
 4. Set `CLIENT_ORIGIN`, `APP_URL`, `VITE_API_URL`, and `VITE_SOCKET_URL` to deployed URLs.
 5. Set AWS S3 environment variables on the server for attachment uploads and downloads.
-6. Configure SMTP or a transactional email provider for password resets and invitations.
+6. Configure EmailJS templates for password resets and invitations.
 
 ## Trade-Offs
 
 - The UI is intentionally focused on core workflows rather than a full design system.
-- Local file storage is used for fast reviewability; the storage boundary is isolated for cloud migration.
+- Attachments require S3 configuration; local disk storage is intentionally not included.
 - In-memory caching is sufficient for the assignment but should become Redis in a multi-instance deployment.
 - Background email jobs are not included; production should queue email and notification delivery.

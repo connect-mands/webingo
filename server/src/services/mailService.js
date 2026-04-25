@@ -1,32 +1,78 @@
-import { MailtrapClient } from "mailtrap";
-import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
 
-export async function sendMail({ to, subject, text }) {
-  if (env.mailtrap.token) {
-    const client = new MailtrapClient({ token: env.mailtrap.token });
-    await client.send({
-      from: {
-        email: env.mailtrap.senderEmail,
-        name: env.mailtrap.senderName
-      },
-      to: [{ email: to }],
-      subject,
-      text,
-      category: "Project Management"
+function hasEmailJsPasswordResetConfig() {
+  return Boolean(env.emailjs.serviceId && env.emailjs.publicKey && env.emailjs.passwordResetTemplateId);
+}
+
+function hasEmailJsInviteConfig() {
+  return Boolean(env.emailjs.serviceId && env.emailjs.publicKey && env.emailjs.inviteTemplateId);
+}
+
+async function sendEmailJsTemplate({ templateId, templateParams, errorLabel }) {
+  const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      service_id: env.emailjs.serviceId,
+      template_id: templateId,
+      user_id: env.emailjs.publicKey,
+      template_params: templateParams
+    })
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`EmailJS ${errorLabel} email failed: ${message}`);
+  }
+}
+
+function logDevEmail({ to, subject, text }) {
+  console.log(`[dev-mail] To: ${to}\nSubject: ${subject}\n${text}`);
+}
+
+export async function sendPasswordResetEmail({ to, link }) {
+  if (hasEmailJsPasswordResetConfig()) {
+    await sendEmailJsTemplate({
+      templateId: env.emailjs.passwordResetTemplateId,
+      errorLabel: "password reset",
+      templateParams: {
+        to_email: to,
+        email: to,
+        link
+      }
     });
     return;
   }
 
-  if (!env.smtp.host || !env.smtp.user || !env.smtp.pass) {
-    console.log(`[dev-mail] To: ${to}\nSubject: ${subject}\n${text}`);
+  logDevEmail({
+    to,
+    subject: "Reset your password",
+    text: `Use this link to reset your password: ${link}`
+  });
+}
+
+export async function sendProjectInvitationEmail({ to, name, projectName, role, link }) {
+  if (hasEmailJsInviteConfig()) {
+    await sendEmailJsTemplate({
+      templateId: env.emailjs.inviteTemplateId,
+      errorLabel: "project invitation",
+      templateParams: {
+        to_email: to,
+        email: to,
+        name,
+        project_name: projectName,
+        role,
+        link
+      }
+    });
     return;
   }
-  const transporter = nodemailer.createTransport({
-    host: env.smtp.host,
-    port: env.smtp.port,
-    secure: env.smtp.port === 465,
-    auth: { user: env.smtp.user, pass: env.smtp.pass }
+
+  logDevEmail({
+    to,
+    subject: "Project invitation",
+    text: `You were invited to join ${projectName} as ${role}: ${link}`
   });
-  await transporter.sendMail({ from: env.smtp.from, to, subject, text });
 }

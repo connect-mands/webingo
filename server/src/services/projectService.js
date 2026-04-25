@@ -5,7 +5,7 @@ import { AppError, notFound } from "../utils/AppError.js";
 import { cacheDeleteByPrefix, cacheGet, cacheSet } from "../utils/cache.js";
 import { hashToken, randomToken } from "../utils/tokens.js";
 import { logActivity, listActivity } from "./activityService.js";
-import { sendMail } from "./mailService.js";
+import { sendProjectInvitationEmail } from "./mailService.js";
 import { env } from "../config/env.js";
 
 function isTransactionUnsupported(error) {
@@ -100,6 +100,8 @@ export async function deleteProject({ projectId, userId }) {
 }
 
 export async function inviteMember({ projectId, email, role, invitedBy }) {
+  const project = await Project.findById(projectId).select("name").lean();
+  if (!project) throw notFound("Project");
   const token = randomToken();
   const invitation = await Invitation.create({
     project: projectId,
@@ -110,7 +112,13 @@ export async function inviteMember({ projectId, email, role, invitedBy }) {
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   });
   const link = `${env.appUrl}/accept-invite?token=${token}&email=${encodeURIComponent(email)}`;
-  await sendMail({ to: email, subject: "Project invitation", text: `You were invited to join a project: ${link}` });
+  await sendProjectInvitationEmail({
+    to: email,
+    name: email.split("@")[0],
+    projectName: project.name,
+    role,
+    link
+  });
   await logActivity({
     project: projectId,
     actor: invitedBy,

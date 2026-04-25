@@ -13,17 +13,11 @@ export const env = {
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   bcryptRounds: Number(process.env.BCRYPT_ROUNDS || 12),
   maxFileSizeMb: Number(process.env.MAX_FILE_SIZE_MB || 5),
-  smtp: {
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-    from: process.env.EMAIL_FROM || "no-reply@example.com"
-  },
-  mailtrap: {
-    token: process.env.MAILTRAP_TOKEN,
-    senderEmail: process.env.MAILTRAP_SENDER_EMAIL || process.env.EMAIL_FROM || "hello@demomailtrap.co",
-    senderName: process.env.MAILTRAP_SENDER_NAME || "CollabPM"
+  emailjs: {
+    serviceId: process.env.EMAILJS_SERVICE_ID,
+    publicKey: process.env.EMAILJS_PUBLIC_KEY,
+    passwordResetTemplateId: process.env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID || process.env.EMAILJS_TEMPLATE_ID || process.env.TemplateID,
+    inviteTemplateId: process.env.EMAILJS_INVITE_TEMPLATE_ID
   },
   aws: {
     region: process.env.AWS_REGION || "ap-south-1",

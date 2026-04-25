@@ -4,7 +4,7 @@ import { env } from "../config/env.js";
 import { RefreshToken, User } from "../models/index.js";
 import { AppError } from "../utils/AppError.js";
 import { hashToken, randomToken, signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/tokens.js";
-import { sendMail } from "./mailService.js";
+import { sendPasswordResetEmail } from "./mailService.js";
 
 function refreshExpiryDate() {
   return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -76,7 +76,7 @@ export async function requestPasswordReset(email) {
   user.passwordResetExpiresAt = new Date(Date.now() + 30 * 60 * 1000);
   await user.save();
   const link = `${env.appUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
-  await sendMail({ to: email, subject: "Reset your password", text: `Use this link to reset your password: ${link}` });
+  await sendPasswordResetEmail({ to: email, link });
 }
 
 export async function resetPassword({ email, token, password }) {
