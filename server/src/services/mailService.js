@@ -69,7 +69,6 @@ export async function sendProjectInvitationEmail({ to, name, projectName, role, 
     });
     return;
   }
-
   logDevEmail({
     to,
     subject: "Project invitation",
