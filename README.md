@@ -52,7 +52,7 @@ Server:
 - `BCRYPT_ROUNDS` - defaults to `12`.
 - `MAX_FILE_SIZE_MB` - upload size limit.
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET_NAME`, `AWS_S3_PREFIX` - required S3 storage configuration. `AWS_S3_PREFIX=demo` stores files under the `demo/` folder in the bucket.
-- `EMAILJS_SERVICE_ID`, `EMAILJS_PUBLIC_KEY`, `EMAILJS_PASSWORD_RESET_TEMPLATE_ID`, `EMAILJS_INVITE_TEMPLATE_ID` - optional EmailJS email template configuration. Templates should include `{{link}}`; invitations can also use `{{name}}`, `{{project_name}}`, `{{role}}`, and `{{to_email}}`.
+- `EMAILJS_SERVICE_ID`, `EMAILJS_PUBLIC_KEY`, `EMAILJS_PRIVATE_KEY`, `EMAILJS_PASSWORD_RESET_TEMPLATE_ID`, `EMAILJS_INVITE_TEMPLATE_ID` - optional EmailJS email template configuration. Templates should include `{{link}}`; invitations can also use `{{name}}`, `{{project_name}}`, `{{role}}`, and `{{to_email}}`.
 - `APP_URL` - frontend URL used in email links.
 
 Client:

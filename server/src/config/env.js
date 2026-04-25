@@ -16,6 +16,7 @@ export const env = {
   emailjs: {
     serviceId: process.env.EMAILJS_SERVICE_ID,
     publicKey: process.env.EMAILJS_PUBLIC_KEY,
+    privateKey: process.env.EMAILJS_PRIVATE_KEY,
     passwordResetTemplateId: process.env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID || process.env.EMAILJS_TEMPLATE_ID || process.env.TemplateID,
     inviteTemplateId: process.env.EMAILJS_INVITE_TEMPLATE_ID
   },

@@ -18,6 +18,7 @@ async function sendEmailJsTemplate({ templateId, templateParams, errorLabel }) {
       service_id: env.emailjs.serviceId,
       template_id: templateId,
       user_id: env.emailjs.publicKey,
+      accessToken: env.emailjs.privateKey,
       template_params: templateParams
     })
   });
